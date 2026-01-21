@@ -7,7 +7,19 @@ class SpellCard(Card):
         self.effect_type = effect_type
 
     def play(self, game_state: dict) -> dict:
-        pass
+        if not self.is_playable(game_state["mana"]):
+            print()
+            return
+        result = {
+            "card_played": self.name,
+            "mana_used": self.cost,
+            "effect": self.resolve_effect(game_state.get("enemy_crea", [])),
+        }
+        game_state["mana"] -= self.cost
+        self.resolve_effect(game_state.get("enemy_crea", []))
+        print(f"Play result: {result}\n")
 
     def resolve_effect(self, targets: list) -> dict:
-        pass
+        for target in targets:
+            target.health -= 3
+        return {"Effect Type": self.effect_type, "Targets": targets}

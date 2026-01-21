@@ -10,7 +10,16 @@ class ArtifactCard(Card):
         self.effect = effect
 
     def play(self, game_state: dict) -> dict:
-        pass
+        if not self.is_playable(game_state["mana"]):
+            print("")
+            return
+        result = {
+            "card_played": self.name,
+            "mana_used": self.cost,
+            "effect": self.activate_ability(),
+        }
+        game_state["mana"] -= self.cost
+        print(f"Play result: {result}\n")
 
     def activate_ability(self) -> dict:
-        pass
+        return {"Permanent": self.effect}

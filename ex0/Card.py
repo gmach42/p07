@@ -6,13 +6,16 @@ class Card(ABC):
         self.name = name
         self.cost = cost
         self.rarity = rarity
+        self.type = self.__class__.__name__.replace('Card', '')
 
     @abstractmethod
     def play(self, game_state: dict):
         pass
 
     def get_card_info(self):
-        pass
+        return self.__dict__
 
     def is_playable(self, available_mana: int):
-        pass
+        if available_mana >= self.cost:
+            return True
+        return False
