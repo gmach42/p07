@@ -38,7 +38,7 @@ def main():
     print(f"Playable: {fire_dragon.is_playable(game_state['mana'])}")
     fire_dragon.play(game_state)
 
-    print("Abstrat pattern successfully demonstrated! (fun?(nope))")
+    print("Abstract pattern successfully demonstrated!")
 
 
 if __name__ == "__main__":

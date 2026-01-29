@@ -22,4 +22,5 @@ class SpellCard(Card):
     def resolve_effect(self, targets: list) -> dict:
         for target in targets:
             target.health -= 3
-        return {"Effect Type": self.effect_type, "Targets": targets}
+        names = [target.name for target in targets]
+        return {"Effect Type": self.effect_type, "Targets": names}
