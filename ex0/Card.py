@@ -19,3 +19,6 @@ class Card(ABC):
         if available_mana >= self.cost:
             return True
         return False
+
+    def __repr__(self):
+        return f"{self.name} ({self.type})"

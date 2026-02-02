@@ -1,4 +1,4 @@
-from ex3.GameStrategy import GameStrategy
+from .GameStrategy import GameStrategy
 
 
 class AggressiveStrategy(GameStrategy):

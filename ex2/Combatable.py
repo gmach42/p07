@@ -12,4 +12,9 @@ class Combatable(ABC):
 
     @abstractmethod
     def get_combat_stats(self) -> dict:
-        pass
+        return {
+            "combat_type": self.combat_type,
+            "attack_power": self.attack_power,
+            "defense": self.defense,
+            "health": self.health,
+        }
