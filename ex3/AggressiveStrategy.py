@@ -2,40 +2,54 @@ from .GameStrategy import GameStrategy
 from ex0.Card import Card
 
 
+class NotEnoughManaError(ValueError):
+    print("Not enough mana to play this card.")
+
+
 class AggressiveStrategy(GameStrategy):
 
     @staticmethod
-    def index_lowest_cost(hand: list) -> int:
-        return hand.index(min(c.cost for c in hand))
+    def lowest_cost_card(hand: list) -> Card:
+        return min(hand, key=lambda card: card.cost)
 
-    def execute_turn(self, hand: list, battlefield: list) -> dict:
+    def execute_turn(self, hand: list, battlefield: list, gamestate: dict) -> dict:
         """
-        Prioritize attacking and dealing damage
-        Play low-cost creatures first for board pressure
-        Targets enemy creatures and player directly
-        Returns comprehensive turn execution results
+        Play low-cost cards first until hand is empty or insufficient mana
         """
-        while hand:
-            card_to_play = hand[self.index_lowest_cost(hand)]
-            try:
-                card_to_play.play()
-            except ValueError:
-                continue
+        cards_played = []
+        total_mana_used = 0
+        available_mana = gamestate.get("mana", 10)  # Starting mana per turn
 
-        card_played
-        mana_used
-        targets_attacked
-        damaged_dealt
+        while hand and available_mana > 0:
+            # Find the lowest cost card that can be played
+            card = self.lowest_cost_card(hand)
+
+            # Check if we have enough mana to play this card
+            if card.cost > available_mana:
+                break  # Can't play any more cards
+
+            # Play the card
+            game_state = {"mana": available_mana}
+            card.play(game_state)
+
+            # Track what we played
+            cards_played.append(card)
+            available_mana -= card.cost
+            total_mana_used += card.cost
+
+            # Remove the played card from hand
+            hand.remove(card)
 
         return {
-            'card_played': card_played,
-            'mana_used': mana_used,
+            'cards_played': cards_played,
+            'mana_used': total_mana_used,
             'targets_attacked': targets_attacked
-            'damaged_dealt': damage_dealt
         }
 
     def get_strategy_name(self) -> str:
         return super().get_strategy_name()
 
     def prioritize_targets(self, available_targets: list) -> list:
-        return super().prioritize_targets(available_targets)
+        # Prioritize attacking enemy creatures first, then the player
+        prioritized_targets = sorted(available_targets, key=lambda t: (t.type != 'creature', t.health))
+        return prioritized_targets

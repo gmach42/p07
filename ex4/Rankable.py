@@ -7,11 +7,11 @@ class Rankable(ABC):
         pass
 
     @abstractmethod
-    def update_wins(self, wins: int):
+    def update_wins(self, wins: int) -> None:
         pass
 
     @abstractmethod
-    def update_losses(self, losses: int):
+    def update_losses(self, losses: int) -> None:
         pass
 
     @abstractmethod

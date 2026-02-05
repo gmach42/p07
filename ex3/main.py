@@ -9,7 +9,7 @@ def print_dict(d: dict) -> str:
 
 
 def main():
-    print("=== DataDeck Game Engine ===")
+    print("=== DataDeck Game Engine ===\n")
     print("Configuring Fantasy Card Game...")
     factory = FantasyCardFactory()
     strategy = AggressiveStrategy()
@@ -17,18 +17,23 @@ def main():
     print_dict(game_engine.get_engine_status())
 
     print("\nSimulating aggressive turn...")
-    print("Hand: [Fire Dragon (5), Goblin Warrior (2), Lightning Bolt (3)]")
+    fire_dragon = factory.create_creature("Fire Dragon")
+    goblin_warrior = factory.create_creature("Goblin Warrior")
+    fireball = factory.create_spell("Fireball")
+    hand = [fire_dragon, goblin_warrior, fireball]
+    print(f"Hand: {hand}")
+    battlefield = [
+        {'enemy_player': 'Enemy Player'},
+        {'enemy_creature': None},
+        {'player': 'Player'},
+        {'allied_creature': None}
+        ]
 
     print("\nTurn execution:")
-    print("Strategy: AggressiveStrategy")
-    print("Actions: {'cards_played': ['Goblin Warrior', 'Lightning Bolt'],")
-    print("'mana_used': 5, 'targets_attacked': ['Enemy Player'],")
-    print("'damage_dealt': 8}")
+    print_dict(game_engine.simulate_turn(hand, battlefield))
 
     print("\nGame Report:")
-    print("{'turns_simulated': 1, 'strategy_used': 'AggressiveStrategy',")
-    print("'total_damage': 8, 'cards_created': 3}")
-    print("Abstract Factory + Strategy Pattern: Maximum flexibility achieved!")
+    print_dict(game_engine.get_game_report())
 
 
 if __name__ == "__main__":

@@ -21,4 +21,4 @@ class Card(ABC):
         return False
 
     def __repr__(self):
-        return f"{self.name} ({self.type})"
+        return f"{self.name} ({self.type}, cost: {self.cost})"

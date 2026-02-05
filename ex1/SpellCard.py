@@ -24,3 +24,7 @@ class SpellCard(Card):
             target.health -= 3
         names = [target.name for target in targets]
         return {"Effect Type": self.effect_type, "Targets": names}
+
+    @classmethod
+    def fireball(cls):
+        return cls("Fireball", cost=4, rarity="Uncommon", effect_type="Damage")
