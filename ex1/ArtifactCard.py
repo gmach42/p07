@@ -27,5 +27,9 @@ class ArtifactCard(Card):
     @classmethod
     def mana_ring(cls):
         return cls(
-            "Mana Ring", cost=3, rarity="Uncommon", durability=5, effect="Mana Boost"
+            name="Mana Ring",
+            cost=3,
+            rarity="Uncommon",
+            durability=5,
+            effect="Mana Boost",
         )

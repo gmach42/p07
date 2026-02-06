@@ -1,4 +1,4 @@
-from Rankable import Rankable
+from .Rankable import Rankable
 from ex2 import Combatable
 from ex0 import Card
 

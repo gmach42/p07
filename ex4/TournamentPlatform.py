@@ -1,7 +1,7 @@
-from TournamentCard import TournamentCard
+from .TournamentCard import TournamentCard
 
 
-class TournamentPlatfrom:
+class TournamentPlatform:
     def register_card(card: TournamentCard):
         pass
 

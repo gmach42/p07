@@ -1,13 +1,16 @@
-
-from ex4.TournamentPlatform import TournamentPlatfrom
-from ex4.TournamentCard import TournamentCard
+from .TournamentPlatform import TournamentPlatform
+from .TournamentCard import TournamentCard
 
 
 print("=== DataDeck Tournament Platform ===")
-tournament = TournamentPlatfrom()
+tournament = TournamentPlatform()
 print("Registering Tournament Cards...")
-fire_dragon = TournamentCard("Fire Dragon", "dragon_001", ["Card", "Combatable", "Rankable"], 1200)
-ice_wizard = TournamentCard("Ice Wizard", "wizard_001", ["Card", "Combatable", "Rankable"], 1150)
+fire_dragon = TournamentCard(
+    "Fire Dragon", "dragon_001", ["Card", "Combatable", "Rankable"], 1200
+)
+ice_wizard = TournamentCard(
+    "Ice Wizard", "wizard_001", ["Card", "Combatable", "Rankable"], 1150
+)
 
 tournament.register_card(fire_dragon)
 tournament.register_card(ice_wizard)
