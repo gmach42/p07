@@ -1,8 +1,8 @@
-from .GameEngine import GameEngine, TurnPhase
+from .GameEngine import GameEngine, TurnPhase, Gamestate, BoardField
 from .FantasyCardFactory import FantasyCardFactory
 from .AggressiveStrategy import AggressiveStrategy
-from ..ex1 import Deck, SpellCard, ArtifactCard
-from ..ex0 import Card, CreatureCard, Player
+from ex1.Deck import Deck
+from ex0.Player import Player
 
 
 def print_dict(d: dict) -> str:
@@ -16,7 +16,7 @@ def main():
     piscine_python = Player("Piscine Python", 10, Deck([]))
 
     # Gamestate with turn number and player info
-    gamestate: dict[int, list[Player]] = {
+    gamestate: Gamestate = {
         "turn": 1,
         "players": [gildas, piscine_python],
         "active_player": gildas,  # Who is currently playing
@@ -28,12 +28,12 @@ def main():
 
     # Have to implement nonsensical battlefield structure to fit
     # the strategy's expected input
-    gildas_battlefield: dict[int, list[CreatureCard]] = {
+    gildas_board: BoardField = {
         'lifepoints': 30,
         'creatures': []
     }
 
-    enemy_battlefield: dict[int, list[Card]] = {
+    enemy_board: BoardField = {
         'lifepoints': 30,
         'creatures': []
     }
@@ -42,10 +42,10 @@ def main():
     # Would have been more intuitive to have gamestate contain battlefield
     # (or have a separate class for it) but then we would have to change the
     # strategy's expected input so here we are
-    battlefield: list = [
+    battlefield: list[Gamestate | BoardField] = [
         gamestate, {
-            "gildas": gildas_battlefield,
-            "enemy": enemy_battlefield
+            "gildas": gildas_board,
+            "enemy": enemy_board
         },
     ]
     print("=== DataDeck Game Engine ===\n")
@@ -53,7 +53,10 @@ def main():
     # Setting up Fantasy Card Game engine
     factory = FantasyCardFactory()
     strategy = AggressiveStrategy()
-    game = GameEngine("Fantasy Card Game", factory, strategy, battlefield)
+    game = GameEngine("Fantasy Card Game", battlefield)
+
+    # Why not just pass the factory and strategy to the constructor?
+    game.configure_engine(factory, strategy)
     print_dict(game.get_engine_status())
 
     print("\nSimulating a game...")

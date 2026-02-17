@@ -4,10 +4,10 @@ from ex1.Deck import Deck
 
 class Player:
 
-    def __init__(self, name: str, mana: int, deck: Deck):
+    def __init__(self, name: str, mana: int):
         self.name: str = name
         self.__mana: int = mana
-        self.__deck: Deck = deck
+        self.deck: Deck | dict = None
         self.__hand: list[Card] = []
 
     def spend_mana(self, mana: int) -> None:
@@ -45,6 +45,3 @@ class Player:
             self.spend_mana(result["mana_used"])
             self.__hand.remove(card)
         return result
-
-    def set_deck(self, deck: Deck) -> None:
-        self.__deck = deck

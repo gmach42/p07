@@ -1,7 +1,9 @@
 from .GameStrategy import GameStrategy
-from ..ex0 import Card, CreatureCard
-from ..ex1 import SpellCard, ArtifactCard
-from .GameEngine import Player, TurnPhase, TurnPhaseError
+from ex0.Card import Card
+from ex0.CreatureCard import CreatureCard
+from ex1.SpellCard import SpellCard
+from ex1.ArtifactCard import ArtifactCard
+from .GameEngine import Player, TurnPhase
 from operator import attrgetter
 
 
@@ -11,19 +13,17 @@ class AggressiveStrategy(GameStrategy):
         self.total_damage: int = 0
 
     def execute_turn(
-        self, hand: list, battlefield: list[dict,
-                                            dict[dict[int, list[CreatureCard]],
-                                                 dict[int,
-                                                      list[CreatureCard]]]]
+        self, hand: list,
+        battlefield: list[dict]
     ) -> dict:
         """Execute the turn and returns a list of all the action done"""
 
         # Get gamestate status
         gamestate = battlefield[0]
 
-        if gamestate['phase'] is not TurnPhase.END or gamestate[
+        if gamestate['phase'] is not TurnPhase.END and gamestate[
                 'phase'] is not TurnPhase.INIT:
-            raise TurnPhaseError("The turn cannot begin, "
+            raise ValueError("The turn cannot begin, "
                                  "another turn is already taking place...")
 
         # Get all game data
