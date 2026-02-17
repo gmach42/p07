@@ -9,7 +9,7 @@ def print_dict(d: dict) -> str:
         print(f"{k.capitalize()}: {v}")
 
 
-def main():
+def main() -> None:
     print("\n=== DataDeck Ability System ===")
 
     arcane_warrior = EliteCard(

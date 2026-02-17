@@ -4,7 +4,7 @@ from .Card import Card
 class CreatureCard(Card):
     def __init__(
         self, name: str, cost: int, rarity: str, attack: int, health: int
-    ):
+    ) -> None:
         super().__init__(name, cost, rarity)
         if attack > 0:
             self.attack = attack
@@ -31,25 +31,32 @@ class CreatureCard(Card):
             "effect": "Creature summoned to battlefield",
         }
         game_state["mana"] -= self.cost
-        print(f"Play result: {result}\n")
+        return result
 
-    def attack_target(self, target) -> dict:
+    def attack_target(self, target: "CreatureCard") -> dict:
+        if self.attack >= target.health:
+            target.health = 0
+            combat_resolved = True
+        else:
+            target.health -= self.attack
+            combat_resolved = False
+
         result = {
             "attacker": self.name,
             "target": target.name,
             "damage_dealt": self.attack,
-            "combat_resolved": True,
+            "combat_resolved": combat_resolved,
         }
-        print(f"Attack result: {result}\n")
+        return result
 
     @classmethod
-    def fire_dragon(cls):
+    def fire_dragon(cls) -> "CreatureCard":
         return cls("Fire Dragon", 5, "Legendary", 7, 5)
 
     @classmethod
-    def goblin_warrior(cls):
+    def goblin_warrior(cls) -> "CreatureCard":
         return cls("Goblin Warrior", 3, "Rare", 2, 7)
 
     @classmethod
-    def gnome_scout(cls):
+    def gnome_scout(cls) -> "CreatureCard":
         return cls("Gnome Scout", 2, "Common", 1, 2)

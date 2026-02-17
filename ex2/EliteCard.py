@@ -61,7 +61,7 @@ class EliteCard(Card, Combatable, Magical):
             "still_alive": self.health > 0,
         }
 
-    def get_combat_stats(self):
+    def get_combat_stats(self) -> dict:
         # d1 = super().get_card_info()
         # d2 = super().get_combat_stats()
         # res = d1.update(d2)

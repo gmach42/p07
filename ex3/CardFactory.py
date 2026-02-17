@@ -5,6 +5,7 @@ from ex0.CreatureCard import CreatureCard
 
 class CardFactory(ABC):
     supported_types = []
+
     @abstractmethod
     def create_creature(self, name_or_power: str | int | None = None) -> Card:
         res = CreatureCard(name_or_power)

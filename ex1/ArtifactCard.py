@@ -19,13 +19,13 @@ class ArtifactCard(Card):
             "effect": self.activate_ability(),
         }
         game_state["mana"] -= self.cost
-        print(f"Play result: {result}\n")
+        return result
 
     def activate_ability(self) -> dict:
         return {"Permanent": self.effect}
 
     @classmethod
-    def mana_ring(cls):
+    def mana_ring(cls) -> "ArtifactCard":
         return cls(
             name="Mana Ring",
             cost=3,

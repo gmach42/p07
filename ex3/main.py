@@ -1,7 +1,8 @@
-from .GameEngine import GameEngine, Player
+from .GameEngine import GameEngine, TurnPhase
 from .FantasyCardFactory import FantasyCardFactory
 from .AggressiveStrategy import AggressiveStrategy
-from ex1.Deck import Deck
+from ..ex1 import Deck, SpellCard, ArtifactCard
+from ..ex0 import Card, CreatureCard, Player
 
 
 def print_dict(d: dict) -> str:
@@ -10,38 +11,65 @@ def print_dict(d: dict) -> str:
 
 
 def main():
-    gildas = Player("Gildas", 10, Deck("Gildas'_deck"))
-    enemy = Player("Enemy", 5, Deck("Enemy's_deck"))
-    battlefield = {
-        'gildas_crea': [],
-        'enemy_crea': [],
+    # Create players
+    gildas = Player("Gildas", 10, Deck([]))
+    piscine_python = Player("Piscine Python", 10, Deck([]))
+
+    # Gamestate with turn number and player info
+    gamestate: dict[int, list[Player]] = {
+        "turn": 1,
+        "players": [gildas, piscine_python],
+        "active_player": gildas,  # Who is currently playing
+        "phase": TurnPhase.INIT,  # init, draw, main, combat, end
+        "game_over": False,
+        "winner": None,  # Evil shall be vanquished
+        "total_damage": 0,  # Why tho
     }
-    gamestate = {
-        'players': [gildas, enemy],
-        'battlefield': battlefield,
+
+    # Have to implement nonsensical battlefield structure to fit
+    # the strategy's expected input
+    gildas_battlefield: dict[int, list[CreatureCard]] = {
+        'lifepoints': 30,
+        'creatures': []
     }
+
+    enemy_battlefield: dict[int, list[Card]] = {
+        'lifepoints': 30,
+        'creatures': []
+    }
+
+    # Battlefield contains gamestate and each respective player's battlefield
+    # Would have been more intuitive to have gamestate contain battlefield
+    # (or have a separate class for it) but then we would have to change the
+    # strategy's expected input so here we are
+    battlefield: list = [
+        gamestate, {
+            "gildas": gildas_battlefield,
+            "enemy": enemy_battlefield
+        },
+    ]
     print("=== DataDeck Game Engine ===\n")
-    print("Configuring Fantasy Card Game...")
 
-    # Setting up FantasyCardFactory
+    # Setting up Fantasy Card Game engine
     factory = FantasyCardFactory()
-    fire_dragon = factory.create_creature("Fire Dragon")
-    goblin_warrior = factory.create_creature("Goblin Warrior")
-    fireball = factory.create_spell("Fireball")
-    
     strategy = AggressiveStrategy()
-    game_engine = GameEngine(factory, strategy)
-    print_dict(game_engine.get_engine_status())
+    game = GameEngine("Fantasy Card Game", factory, strategy, battlefield)
+    print_dict(game.get_engine_status())
 
-    print("\nSimulating aggressive turn...")
-    hand = [fire_dragon, goblin_warrior, fireball]
-    print(f"Hand: {gildas.get_hand()}")
-
-    print("\nTurn execution:")
-    print_dict(game_engine.simulate_turn(hand, battlefield))
+    print("\nSimulating a game...")
+    while not gamestate['game_over']:
+        print(f"\n--- Turn {gamestate['turn']} ---")
+        print(f"Active Player: {gamestate['active_player'].name}")
+        print_dict(game.simulate_turn())
+        print(f"End of turn {gamestate['turn'] - 1} status:")
 
     print("\nGame Report:")
-    print_dict(game_engine.get_game_report())
+    game_report = game.get_game_report()
+    print_dict(game_report)
+
+    print("\n" + "=" * 30)
+    print(game_report['message'])
+    print("=" * 30)
 
 
 if __name__ == "__main__":

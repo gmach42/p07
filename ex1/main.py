@@ -1,10 +1,10 @@
-from ex1.Deck import Deck
+from .Deck import Deck
 from ex0.CreatureCard import CreatureCard
-from ex1.SpellCard import SpellCard
-from ex1.ArtifactCard import ArtifactCard
+from .SpellCard import SpellCard
+from .ArtifactCard import ArtifactCard
 
 
-def main():
+def main() -> None:
     print("=== DataDeck Deck Builder ===\n")
     print("Building deck with different card types...")
     deck = Deck("Gildas")
@@ -29,7 +29,8 @@ def main():
     }
     while len(deck.total_cards) > 0:
         card = deck.draw_card()
-        card.play(game_state)
+        result = card.play(game_state)
+        print(f"Play result: {result}\n")
 
     print("Polymorphism in action: Same interface, different card behaviors!")
 

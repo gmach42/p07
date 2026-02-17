@@ -1,55 +1,127 @@
 from .GameStrategy import GameStrategy
-from ex0.Card import Card
-
-
-class NotEnoughManaError(ValueError):
-    print("Not enough mana to play this card.")
+from ..ex0 import Card, CreatureCard
+from ..ex1 import SpellCard, ArtifactCard
+from .GameEngine import Player, TurnPhase, TurnPhaseError
+from operator import attrgetter
 
 
 class AggressiveStrategy(GameStrategy):
 
-    @staticmethod
-    def lowest_cost_card(hand: list) -> Card:
-        return min(hand, key=lambda card: card.cost)
+    def __init__(self):
+        self.total_damage: int = 0
 
-    def execute_turn(self, hand: list, battlefield: list, gamestate: dict) -> dict:
-        """
-        Play low-cost cards first until hand is empty or insufficient mana
-        """
-        cards_played = []
-        total_mana_used = 0
-        available_mana = gamestate.get("mana", 10)  # Starting mana per turn
+    def execute_turn(
+        self, hand: list, battlefield: list[dict,
+                                            dict[dict[int, list[CreatureCard]],
+                                                 dict[int,
+                                                      list[CreatureCard]]]]
+    ) -> dict:
+        """Execute the turn and returns a list of all the action done"""
 
-        while hand and available_mana > 0:
-            # Find the lowest cost card that can be played
-            card = self.lowest_cost_card(hand)
+        # Get gamestate status
+        gamestate = battlefield[0]
 
-            # Check if we have enough mana to play this card
-            if card.cost > available_mana:
-                break  # Can't play any more cards
+        if gamestate['phase'] is not TurnPhase.END or gamestate[
+                'phase'] is not TurnPhase.INIT:
+            raise TurnPhaseError("The turn cannot begin, "
+                                 "another turn is already taking place...")
 
-            # Play the card
-            game_state = {"mana": available_mana}
-            card.play(game_state)
+        # Get all game data
+        active_player: Player = gamestate.get('active_player')
+        active_battlefield: dict = battlefield[1].get(active_player.name)
+        opposite_player = [
+            p for p in gamestate.get('players', []) if p != active_player
+        ][0]
+        opposite_battlefield: dict = battlefield[1].get(opposite_player.name)
 
-            # Track what we played
-            cards_played.append(card)
-            available_mana -= card.cost
-            total_mana_used += card.cost
+        # Draw phase
+        gamestate['phase'] = TurnPhase.DRAW
+        active_player.draw_card()
 
-            # Remove the played card from hand
-            hand.remove(card)
+        # Main Phase, active player can play his/her cards
+        gamestate['phase'] = TurnPhase.MAIN
+        targets: list = self.prioritize_targets(opposite_battlefield)
+        targets_attacked: set = {}
+        direct_damage_dealt: int = 0
+        cards_played, mana_used = self.play_main_phase(active_player,
+                                                       gamestate)
+
+        # Combat phase, prioritize dealing damage and targeting enemy
+        # player and creatures
+        gamestate['phase'] = TurnPhase.COMBAT
+        for creature in active_battlefield['creatures']:
+            target: CreatureCard = targets[0]
+            _, target, damage_dealt, _ = creature.attack_target(target)
+            if target.name == opposite_player.name:
+                direct_damage_dealt += damage_dealt
+                opposite_battlefield['lifepoints'] -= damage_dealt
+            targets_attacked.add(target)
+            if target.health <= 0:
+                targets.pop(0)
+
+        # End Phase check the status of the game
+        gamestate['phase'] = TurnPhase.END
+        if opposite_battlefield['lifepoints'] <= 0:
+            gamestate['game_over'] = True
+            gamestate['winner'] = active_player
+            print(gamestate)
+        gamestate['turn'] += 1
 
         return {
             'cards_played': cards_played,
-            'mana_used': total_mana_used,
-            'targets_attacked': targets_attacked
+            'mana_used': mana_used,
+            'targets_attacked': targets_attacked,
+            'damage_dealt': direct_damage_dealt,
         }
 
     def get_strategy_name(self) -> str:
         return super().get_strategy_name()
 
     def prioritize_targets(self, available_targets: list) -> list:
-        # Prioritize attacking enemy creatures first, then the player
-        prioritized_targets = sorted(available_targets, key=lambda t: (t.type != 'creature', t.health))
+        """
+        Prioritize attacking low health enemy creatures first, low attack
+        second, and if no creatures are available, target the enemy player
+        directly
+        """
+        prioritized_targets = sorted(available_targets['creatures'],
+                                     key=lambda c: (c.health, c.attack))
+        print(f"Prioritized targets: {prioritized_targets}")
         return prioritized_targets
+
+    def play_main_phase(self, player: Player,
+                        gamestate: dict) -> tuple[list[Card], int]:
+
+        hand: list[Card] = sorted(player.get_hand(), key=attrgetter('cost'))
+        mana_start: int = player.get_mana
+
+        creatures: list[CreatureCard] = [
+            c for c in hand if isinstance(c, CreatureCard)
+        ]
+        spells: list[SpellCard] = [s for s in hand if isinstance(s, SpellCard)]
+        artifacts: list[ArtifactCard] = [
+            a for a in hand if isinstance(a, ArtifactCard)
+        ]
+
+        played_cards: list[Card] = []
+
+        # Play crea first then spells and finally artifact (Strategy choice)
+        played_cards.extend(self.play_cards(creatures, player, gamestate))
+        played_cards.extend(self.play_cards(spells, player, gamestate))
+        played_cards.extend(self.play_cards(artifacts, player, gamestate))
+
+        mana_spend = mana_start - player.get_mana()
+        return played_cards, mana_spend
+
+    def play_cards(self, cards: list[Card], player: Player,
+                   gamestate: dict) -> list[Card]:
+        played = []
+        for card in cards:
+            if player.get_mana() >= card.cost:
+                card_played, mana_used, effect = player.play_card(
+                    card, gamestate)
+                played.append(card_played)
+                player.spend_mana(mana_used)
+                print(f"Played {card_played} with effect: {effect}")
+            else:
+                print(f"Not enough mana to play {card.name}")
+        return played
