@@ -4,11 +4,14 @@ from ex0.Player import Player
 from .CardFactory import CardFactory
 from .GameStrategy import GameStrategy
 from enum import Enum
-from random import shuffle
 from typing import TypedDict
+from ex1.Deck import Deck
+from ex1.SpellCard import SpellCard
+from ex1.ArtifactCard import ArtifactCard
 
 
 class TurnPhase(Enum):
+    """Enum representing the different phases of a turn"""
     INIT = "Initialization phase:"
     DRAW = "Drawing phase:"
     MAIN = "Main phase:"
@@ -17,6 +20,7 @@ class TurnPhase(Enum):
 
 
 class Gamestate(TypedDict):
+    """TypetDict representing the current state of the game"""
     turn: int
     players: list[Player]
     active_player: Player
@@ -27,8 +31,9 @@ class Gamestate(TypedDict):
 
 
 class BoardField(TypedDict):
-    lifepoints: int
-    creatures: list[CreatureCard]
+    """TypetDict representing the board a player"""
+    player: Player
+    board: tuple[int, list[CreatureCard]]
 
 
 class GameEngine:
@@ -36,65 +41,90 @@ class GameEngine:
     def __init__(
         self,
         name: str,
-        battlefield: dict,
+        battlefield: list[Gamestate | dict[str, list[CreatureCard]]],
     ):
         self.name: str = name
-        self.battlefield: dict[Gamestate | BoardField] = battlefield
+        self.battlefield = battlefield
         self.factory: CardFactory
         self.strategy: GameStrategy
         self.total_damage: int = 0
         self.card_created: list[Card] = []
+        self.player1: Player = battlefield[0]['players'][0]
+        self.player2: Player = battlefield[0]['players'][1]
 
     def configure_engine(self, factory: CardFactory,
                          strategy: GameStrategy) -> None:
+
+        # Set factory and strategy for the game engine
         self.factory = factory
         self.strategy = strategy
-        available_types = self.factory.get_supported_types()
 
         # Create decks for each player and shuffle them
         self.factory.create_themed_deck("large")
-        # Yes deck_list is a dict :)
         deck_list: dict = self.factory.create_themed_deck("large")
         for player in self.battlefield[0]['players']:
+            # Generate a deck list of 15 crea, 10 spells and 5 artifacts
             player.deck = self.factory.generate_deck(deck_list)
-            shuffle(player.deck)
-            self.card_created.extend(player.deck)
-
-        # Print engine configuration
-        print(f"Configuring {self.name}...")
-        print(f"Factory: {self.factory.__class__.__name__}")
-        print(f"Strategy: {self.strategy.get_strategy_name()}")
-        print(f"Available types: {available_types}")
+            player.deck = Deck.from_card_list(player.name, player.deck)
+            player.deck.shuffle()
+            self.card_created.extend(player.deck.total_cards)
+        print("\nThe match opposing "
+              f"{self.player1} "
+              f"and {self.player2} is ready to begin\n")
 
     def simulate_turn(self) -> dict:
         # Get gamestate status and active player
         gamestate = self.battlefield[0]
         active_player: Player = gamestate.get('active_player')
-        print(f"\nSimulating turn {gamestate['turn']} for {active_player.name}...")
+        starting_mana = active_player.get_mana()
+        print(
+            f"\nSimulating turn {gamestate['turn']} for {active_player.name}..."
+        )
 
         turn_report = self.strategy.execute_turn(active_player.get_hand(),
                                                  self.battlefield)
         self.total_damage += turn_report.get("damage_dealt", 0)
+        # Reset mana to starting value for next turn
+        active_player.mana = starting_mana
+        if starting_mana < 10:
+            # Increment mana by 1 each turn, up to a maximum of 10
+            active_player.mana += 1
         gamestate['turn'] += 1
+        gamestate['active_player'] = (self.player2 if active_player
+                                      == self.player1 else self.player1)
         return turn_report
 
     def get_engine_status(self) -> dict:
+        supported_types = self.factory.get_supported_types()
+        available_types: dict[str, list[str]] = {}
+        for category, types in supported_types.items():
+            availables_types_name = [t["name"] for t in types]
+            available_types[category] = availables_types_name
+
         return {
-            "Factory": self.factory,
+            "Factory": str(self.factory),
             "Strategy": self.strategy.get_strategy_name(),
-            "Available types": self.factory.get_supported_types(),
+            "Available types": available_types,
         }
 
     def get_game_report(self) -> dict:
-        if self.battlefield[0]["winner"].__name__ == 'Gildas':
+        if self.battlefield[0]["winner"].name == "Gildas":
             message = "Evil has been vanquished, YOU WIN"
         else:
             message = "Piscine Python shall be the end of us all, YOU LOSE"
+        card_created = {
+            "creature_cards":
+            [c for c in self.card_created if isinstance(c, CreatureCard)],
+            "spell_cards":
+            [c for c in self.card_created if isinstance(c, SpellCard)],
+            "artifact_cards":
+            [c for c in self.card_created if isinstance(c, ArtifactCard)]
+        }
         return {
             "turn_simulated": self.battlefield[0]['turn'] - 1,
             "strategy_used": self.strategy.get_strategy_name(),
             "total_damage": self.total_damage,
-            "card_created": self.card_created,  # Why tho
+            "card_created": card_created,  # Why tho
             "winner": self.battlefield[0]['winner'],
             "message": message,
         }

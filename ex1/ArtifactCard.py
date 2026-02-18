@@ -10,7 +10,8 @@ class ArtifactCard(Card):
         self.effect = effect
 
     def play(self, game_state: dict) -> dict:
-        if not self.is_playable(game_state["mana"]):
+        player = game_state["active_player"]
+        if not self.is_playable(player.get_mana()):
             print("")
             return
         result = {
@@ -18,7 +19,6 @@ class ArtifactCard(Card):
             "mana_used": self.cost,
             "effect": self.activate_ability(),
         }
-        game_state["mana"] -= self.cost
         return result
 
     def activate_ability(self) -> dict:

@@ -47,3 +47,11 @@ class Deck:
             "average_cost": self.get_average_cost(),
         }
         return stats
+
+    @classmethod
+    def from_card_list(cls, name: str, cards: list[Card]) -> "Deck":
+        """Class method to create a Deck from a list of Card objects"""
+        deck = cls(name)
+        for card in cards:
+            deck.add_card(card)
+        return deck

@@ -1,4 +1,4 @@
-from random import random
+from random import random, choice
 from ex0 import Card
 from .CardFactory import CardFactory
 from ex0.CreatureCard import CreatureCard
@@ -299,13 +299,13 @@ class FantasyCardFactory(CardFactory):
         """Generate a random deck based on the provided deck list with 15 creatures, 10 spells, and 5 artifacts."""
         deck = []
         for _ in range(15):
-            creature = random.choice(deck_list["creatures"])
+            creature = choice(deck_list["creatures"])
             deck.append(creature)
         for _ in range(10):
-            spell = random.choice(deck_list["spells"])
+            spell = choice(deck_list["spells"])
             deck.append(spell)
         for _ in range(5):
-            artifact = random.choice(deck_list["artifacts"])
+            artifact = choice(deck_list["artifacts"])
             deck.append(artifact)
         return deck
 

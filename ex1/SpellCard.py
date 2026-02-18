@@ -7,12 +7,15 @@ class SpellCard(Card):
         self.effect_type = effect_type
 
     def play(self, game_state: dict) -> dict:
+        player = game_state["active_player"]
+        if not self.is_playable(player.get_mana()):
+            print("Cannot play card, not enough mana.")
+            return
         result = {
             "card_played": self.name,
             "mana_used": self.cost,
             "effect": self.resolve_effect(game_state.get("enemy_crea", [])),
         }
-        game_state["mana"] -= self.cost
         self.resolve_effect(game_state.get("enemy_crea", []))
         return result
 

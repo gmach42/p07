@@ -1,3 +1,4 @@
+from ex0.Player import Player
 from .Card import Card
 
 
@@ -22,7 +23,8 @@ class CreatureCard(Card):
             )
 
     def play(self, game_state: dict) -> dict:
-        if not self.is_playable(game_state["mana"]):
+        player = game_state["active_player"]
+        if not self.is_playable(player.get_mana()):
             print()
             return
         result = {
@@ -30,16 +32,23 @@ class CreatureCard(Card):
             "mana_used": self.cost,
             "effect": "Creature summoned to battlefield",
         }
-        game_state["mana"] -= self.cost
         return result
 
-    def attack_target(self, target: "CreatureCard") -> dict:
-        if self.attack >= target.health:
-            target.health = 0
-            combat_resolved = True
+    def attack_target(self, target: Card | Player) -> dict:
+        if isinstance(target, Player):
+            if self.attack >= target.lifepoints:
+                target.lifepoints = 0
+                combat_resolved = True
+            else:
+                target.lifepoints -= self.attack
+                combat_resolved = False
         else:
-            target.health -= self.attack
-            combat_resolved = False
+            if self.attack >= target.health:
+                target.health = 0
+                combat_resolved = True
+            else:
+                target.health -= self.attack
+                combat_resolved = False
 
         result = {
             "attacker": self.name,

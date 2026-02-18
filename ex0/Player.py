@@ -6,42 +6,54 @@ class Player:
 
     def __init__(self, name: str, mana: int):
         self.name: str = name
-        self.__mana: int = mana
-        self.deck: Deck | dict = None
-        self.__hand: list[Card] = []
+        self.mana: int = mana
+        self.deck: Deck = None
+        self.hand: list[Card] = []
+        self.lifepoints: int = 30
 
     def spend_mana(self, mana: int) -> None:
-        self.__mana -= mana
+        print(f"{self.mana} - {mana}")
+        self.mana -= mana
 
     def get_mana(self) -> int:
-        return self.__mana
+        return self.mana
 
     def draw_card(self) -> None:
-        card_drawn = self.__deck.draw_card()
-        self.__hand.append(card_drawn)
+        card_drawn = self.deck.draw_card()
+        self.hand.append(card_drawn)
+        if self.deck.total_cards == []:
+            print(f"{self.name} has no more cards to draw!")
+            self.deck = None
 
-    def get_hand(self) -> list[Card]:
-        return self.__hand
+    def get_hand(self) -> list[str]:
+        hand = [f"{card.name} ({card.cost})" for card in self.hand]
+        return hand
 
     def __str__(self) -> str:
         return self.name
 
     def __repr__(self) -> str:
         return (
-            f"Player(name={self.name}, mana={self.__mana}, "
-            f"hand={[card.name for card in self.__hand]})"
+            f"Player(name={self.name}, mana={self.mana}, "
+            f"hand={[card.name for card in self.hand]})"
         )
 
     def play_card(self, card: Card, game_state: dict) -> dict:
-        if card not in self.__hand:
+        result = {
+                "card_played": None,
+                "mana_used": 0,
+                "effect": None,
+        }
+        if card not in self.hand:
             print(f"{self.name} does not have {card.name} in hand.")
-            return None
-        if not card.is_playable(self.__mana):
+            return result
+        if not card.is_playable(self.mana):
             print(
                 f"{self.name} does not have enough mana to play {card.name}.")
-            return None
+            return result
         result = card.play(game_state)
-        if result is not None:
+        if result.get("card_played") is not None:
+            print(f"{self.name} played {card.name}.")
             self.spend_mana(result["mana_used"])
-            self.__hand.remove(card)
+            self.hand.remove(card)
         return result
