@@ -63,33 +63,34 @@ class GameEngine:
         self.factory.create_themed_deck("large")
         deck_list: dict = self.factory.create_themed_deck("large")
         for player in self.battlefield[0]['players']:
-            # Generate a deck list of 15 crea, 10 spells and 5 artifacts
+            # Generate a deck list of 15 creatures, 10 spells and 5 artifacts
             player.deck = self.factory.generate_deck(deck_list)
             player.deck = Deck.from_card_list(player.name, player.deck)
             player.deck.shuffle()
             self.card_created.extend(player.deck.total_cards)
-        print("\nThe match opposing "
-              f"{self.player1} "
-              f"and {self.player2} is ready to begin\n")
 
     def simulate_turn(self) -> dict:
         # Get gamestate status and active player
         gamestate = self.battlefield[0]
         active_player: Player = gamestate.get('active_player')
+        hand = active_player.get_hand()
         starting_mana = active_player.get_mana()
-        print(
-            f"\nSimulating turn {gamestate['turn']} for {active_player.name}..."
-        )
-
-        turn_report = self.strategy.execute_turn(active_player.get_hand(),
-                                                 self.battlefield)
+        self.print_battlefield()
+        print(f"{active_player.name}'s hand: {hand}")
+        turn_report = self.strategy.execute_turn(hand, self.battlefield)
         self.total_damage += turn_report.get("damage_dealt", 0)
         # Reset mana to starting value for next turn
+        mana_used = turn_report.get('mana_used', 0)
+        print(
+            f"{active_player.name} has used {mana_used}/"
+            f"{starting_mana} mana this turn"
+        )
         active_player.mana = starting_mana
-        if starting_mana < 10:
-            # Increment mana by 1 each turn, up to a maximum of 10
+        if starting_mana < 8:
+            # Increment mana by 1 each turn, up to a maximum of 5
             active_player.mana += 1
         gamestate['turn'] += 1
+        # Switch active player for the next turn
         gamestate['active_player'] = (self.player2 if active_player
                                       == self.player1 else self.player1)
         return turn_report
@@ -121,10 +122,27 @@ class GameEngine:
             [c for c in self.card_created if isinstance(c, ArtifactCard)]
         }
         return {
-            "turn_simulated": self.battlefield[0]['turn'] - 1,
-            "strategy_used": self.strategy.get_strategy_name(),
-            "total_damage": self.total_damage,
-            "card_created": card_created,  # Why tho
+            "turn simulated": self.battlefield[0]['turn'] - 1,
+            "strategy used": self.strategy.get_strategy_name(),
+            "total direct damage": self.total_damage,
+            "card created": card_created,  # Why tho
             "winner": self.battlefield[0]['winner'],
             "message": message,
         }
+
+    def print_battlefield(self) -> None:
+        player_boards = self.battlefield[1]
+        player1_board = [
+            c.name for c in player_boards[self.player1.name]
+            if isinstance(c, CreatureCard)
+        ]
+        player2_board = [
+            c.name for c in player_boards[self.player2.name]
+            if isinstance(c, CreatureCard)
+        ]
+        print("Current battlefield state:")
+        battlefield_state = f"{self.player1.name}: {player1_board} VS " \
+                            f"{self.player2.name}: {player2_board}"
+        print('\n' + '+' * len(battlefield_state))
+        print(battlefield_state)
+        print('+' * len(battlefield_state) + '\n')

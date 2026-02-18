@@ -1,4 +1,4 @@
-from random import random, choice
+from random import choice
 from ex0 import Card
 from .CardFactory import CardFactory
 from ex0.CreatureCard import CreatureCard
@@ -296,7 +296,8 @@ class FantasyCardFactory(CardFactory):
             raise ValueError(f"Deck size '{size}' not supported")
 
     def generate_deck(self, deck_list: dict) -> list[Card]:
-        """Generate a random deck based on the provided deck list with 15 creatures, 10 spells, and 5 artifacts."""
+        """Generate a random deck based on the provided deck list with 15
+        creatures, 10 spells, and 5 artifacts."""
         deck = []
         for _ in range(15):
             creature = choice(deck_list["creatures"])

@@ -35,35 +35,81 @@ class AggressiveStrategy(GameStrategy):
         gamestate['phase'] = TurnPhase.DRAW
         if active_player.deck is not None:
             active_player.draw_card()
-        else:
-            print(f"{active_player.name} has no deck to draw from!")
-        print(f"Current hand: {active_player.get_hand()}")
 
         # Main Phase, active player can play his/her cards
         gamestate['phase'] = TurnPhase.MAIN
-        targets: list = self.prioritize_targets(opposite_board)
         targets_attacked: set = set()
         direct_damage_dealt: int = 0
         cards_played, mana_used = self.play_main_phase(active_player,
                                                        gamestate)
+
+        # Track newly summoned creatures (can't attack first turn)
+        newly_summoned: list[CreatureCard] = []
         for creature in cards_played:
             if isinstance(creature, CreatureCard):
-                active_board.extend([creature])
-                print(
-                    f"{creature.name} has been summoned to the battlefield for "
-                    f"{active_player.name}.")
+                active_board.append(creature)
+                newly_summoned.append(creature)
+                print(f"{creature.name} enters the battlefield")
+
+        spell_played: list[SpellCard] = [
+            s for s in cards_played if isinstance(s, SpellCard)
+        ]
 
         # Combat phase, prioritize dealing damage and targeting enemy
         # player and creatures
         gamestate['phase'] = TurnPhase.COMBAT
+
+        # Get prioritized targets for combat
+        targets: list = self.prioritize_targets(opposite_board)
+
+        # Spell cycle
+        if spell_played:
+            for spell in spell_played:
+                if spell.effect_type == "damage":
+                    if not targets:
+                        continue
+                    target = targets[0]
+                    if isinstance(target, Player):
+                        # Attack player directly
+                        damage_dealt = spell.cost
+                        target.lifepoints -= damage_dealt
+                        targets_attacked.add(target.name)
+                        direct_damage_dealt += damage_dealt
+                        self.total_damage += damage_dealt
+                        print(f"{spell.name} hits {target.name} "
+                              f"for {damage_dealt} damage")
+                    else:
+                        target: CreatureCard
+                        # Attack creature on board
+                        damage_dealt = spell.cost
+                        targets_attacked.add(target.name)
+                        target.health -= damage_dealt
+                        print(f"{spell.name} hits {target.name} "
+                              f"for {damage_dealt} damage")
+                        if target.health <= 0:
+                            opposite_board.remove(target)
+                            targets.remove(target)
+                            print(f"{target.name} destroyed!")
+                            if targets:
+                                target = targets[0]
+                elif spell.effect_type == "heal":
+                    # Heal self
+                    heal_amount = spell.cost
+                    active_player.lifepoints += heal_amount
+                    print(f"{spell.name} restores {heal_amount} HP "
+                          f"to {active_player.name}")
+
+        # Creature cycle
         if not active_board:
-            print(
-                f"No creatures available for {active_player.name} to attack.")
+            pass
         else:
+            # Only creatures that were NOT just summoned can attack
             active_creatures = [
                 creature for creature in active_board
                 if isinstance(creature, CreatureCard)
+                and creature not in newly_summoned
             ]
+
             for creature in active_creatures:
                 if targets:
                     target = targets[0]  # Get the highest priority target
@@ -71,39 +117,33 @@ class AggressiveStrategy(GameStrategy):
                     # Check if target is a Player or a Creature
                     if isinstance(target, Player):
                         # Attack player directly
-                        print(
-                            "No creatures available, targeting enemy player directly"
-                        )
                         damage_dealt = creature.attack
                         target.lifepoints -= damage_dealt
                         targets_attacked.add(target.name)
                         direct_damage_dealt += damage_dealt
                         self.total_damage += damage_dealt
-                        print(
-                            f"{creature.name} attacked {target.name} directly "
-                            f"dealing {damage_dealt} damage.")
+                        print(f"{creature.name} attacks "
+                              f"{target.name} for {damage_dealt} damage")
                     else:
-                        # Attack creature
+                        # Attack creature on board
                         attack_result = creature.attack_target(target)
                         targets_attacked.add(target.name)
                         damage_dealt = attack_result.get("damage_dealt", 0)
-                        print(f"{creature.name} attacked {target.name} "
-                              f"dealing {damage_dealt} damage.")
+                        print(f"{creature.name} attacks "
+                              f"{target.name} for {damage_dealt} damage")
                         if attack_result.get("combat_resolved"):
                             opposite_board.remove(target)
                             targets.remove(target)
-                            print(f"{target.name} has been destroyed!")
+                            print(f"{target.name} destroyed!")
                             if targets:
                                 target = targets[0]
-                else:
-                    print(f"No targets left for {creature.name} to attack.")
 
         # End Phase check the status of the game
         gamestate['phase'] = TurnPhase.END
-        if opposite_board[0].lifepoints <= 0:
+        if opposite_player.lifepoints <= 0:
+            opposite_player.lifepoints = 0
             gamestate['game_over'] = True
             gamestate['winner'] = active_player
-            print(gamestate)
 
         return {
             'cards_played': cards_played,
@@ -135,7 +175,6 @@ class AggressiveStrategy(GameStrategy):
                                      key=lambda c: (c.health, c.attack))
         prioritized_targets.append(
             opposite_player)  # Add player as last target
-        print(f"Prioritized targets: {[t.name for t in prioritized_targets]}")
         return prioritized_targets
 
     def play_main_phase(self, player: Player,
@@ -165,14 +204,9 @@ class AggressiveStrategy(GameStrategy):
     def play_cards(self, cards: list[Card], player: Player,
                    gamestate: dict) -> list[Card]:
         played = []
-        play_result: dict = {}
         for card in cards:
             if player.get_mana() >= card.cost:
-                play_result = player.play_card(card, gamestate)
+                player.play_card(card, gamestate)
                 played.append(card)
-                print(
-                    f"Played {card.name} with effect: {play_result.get('effect')}"
-                )
-            else:
-                print(f"Not enough mana to play {card.name}")
+                print(f"Played {card.name}")
         return played

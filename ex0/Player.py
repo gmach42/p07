@@ -12,7 +12,6 @@ class Player:
         self.lifepoints: int = 30
 
     def spend_mana(self, mana: int) -> None:
-        print(f"{self.mana} - {mana}")
         self.mana -= mana
 
     def get_mana(self) -> int:

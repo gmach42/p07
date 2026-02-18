@@ -57,32 +57,26 @@ def main():
     strategy = AggressiveStrategy()
     game = GameEngine("Fantasy Card Game", battlefield)
 
-    # Why not just pass the factory and strategy to the constructor?
-    print(f"Configuring {game.name}...")
     game.configure_engine(factory, strategy)
-    print(game.get_engine_status()["Factory"])
-    print(game.get_engine_status()["Strategy"])
-    print_dict(game.get_engine_status()["Available types"])
 
-    print("\nSimulating a game...")
+    print("\nStarting Battle...\n")
     while not gamestate['game_over']:
-        print(f"\n--- Turn {gamestate['turn']} ---")
-        print_battlefield(battlefield)
-        print_dict(game.simulate_turn())
-        print(f"End of turn {gamestate['turn'] - 1} status:")
-        print(f"{gildas.name}: {gildas.lifepoints} lifepoints")
-        print(f"{piscine_python.name}: {piscine_python.lifepoints} lifepoints")
+        active = gamestate['active_player'].name
+        print(f"=== Turn {gamestate['turn']} - {active} ===")
+        game.simulate_turn()
+        print("\nResults of the turn:")
+        print(f"  {gildas.name}: {gildas.lifepoints} HP")
+        print(f"  {piscine_python.name}: {piscine_python.lifepoints} HP")
+        print()
 
-    print("\nGame Report:")
     game_report = game.get_game_report()
-    print_dict(game_report, except_keys=["message", "card_created"])
-    print("\nCards created during the game:")
-    for category, cards in game_report["card_created"].items():
-        print(f"{category.capitalize()}: {[card.name for card in cards]}")
-
-    print("\n" + "=" * 50)
-    print(game_report['message'])
     print("=" * 50)
+    print(f"{game_report['message']}")
+    print("=" * 50)
+    print()
+    print_dict(game_report,
+               except_keys=["message", "card created", "strategy used"])
+    print()
 
 
 if __name__ == "__main__":
