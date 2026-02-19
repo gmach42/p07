@@ -1,5 +1,7 @@
-from .CreatureCard import CreatureCard
-from .Player import Player
+from ex0.CreatureCard import CreatureCard
+from ex0.Player import Player
+from ex0.GameState import GameState
+from ex0.Card import NotEnoughManaError
 
 
 def main() -> None:
@@ -11,38 +13,39 @@ def main() -> None:
     fire_dragon = CreatureCard("FireDragon", 5, "Legendary", 7, 5)
 
     # Create a player
-    gildas = Player("Gildas", 8, None)
+    gildas = Player("Gildas", 8)
 
-    # Simulate a game state with Gildas having 8 mana and one enemy creature
-    game_state = {
-        "player": gildas,
-        "mana": 8,
-        "ally_crea": [],
-        "enemy_crea": [goblin_warrior],
-        "match_status": True,
+    game_state: GameState = {
+        "players": [gildas],
+        "active_player": gildas,
+        "game_over": False,
     }
 
     print("CreatureCard Info:")
     print(fire_dragon.get_card_info(), "\n")
 
     # Gildas play a Fire Dragon
-    print(
-        f"Playing {fire_dragon.name} with "
-        f"{game_state['mana']} mana available"
-    )
-    print(f"Playable: {fire_dragon.is_playable(game_state['mana'])}")
+    print(f"Playing {fire_dragon.name} with "
+          f"{gildas.get_mana()} mana available")
+    print(f"Playable: {fire_dragon.is_playable(gildas.get_mana())}")
     print(f"Play result: {fire_dragon.play(game_state)}\n")
+
+    # Deck and hand not implemented yet so we directly spend mana here
+    gildas.spend_mana(fire_dragon.cost)
 
     # Fire Dragon attacks Goblin Warrior:
     print(f"{fire_dragon.name} attacks {goblin_warrior.name}:")
     print(f"Attack result: {fire_dragon.attack_target(goblin_warrior)}\n")
 
     # Gildas tries to play a new Fire Dragon but...
-    print(f"Testing insufficient mana ({game_state['mana']} available):")
-    print(f"Playable: {fire_dragon.is_playable(game_state['mana'])}")
-    print(f"Play result: {fire_dragon.play(game_state)}\n")
+    print(f"Testing insufficient mana ({gildas.get_mana()} available):")
+    print(f"Playable: {fire_dragon.is_playable(gildas.get_mana())}")
+    try:
+        print(f"Play result: {fire_dragon.play(game_state)}\n")
+    except NotEnoughManaError as e:
+        print(e, "\n")
 
-    print("Abstract pattern successfully demonstrated!")
+    print("Abstract pattern successfully demonstrated!\n")
 
 
 if __name__ == "__main__":

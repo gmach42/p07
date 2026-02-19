@@ -1,13 +1,18 @@
-from random import choice
-from ex0 import Card
 from .CardFactory import CardFactory
 from ex0.CreatureCard import CreatureCard
 from ex1 import SpellCard, ArtifactCard
 
 
 class FantasyCardFactory(CardFactory):
+    """
+    Factory for creating fantasy-themed cards
+
+    Attributes:
+        supported_types (dict): Dictionary of supported card types with stats
+    """
 
     def __init__(self):
+        """Initialize the FantasyCardFactory with supported card types"""
         self.supported_types = {
             "creatures": [
                 {
@@ -178,6 +183,7 @@ class FantasyCardFactory(CardFactory):
         }
 
     def create_creature(self, name_or_power: str) -> CreatureCard:
+        """Create a creature card by name"""
         if name_or_power not in [
                 c["name"] for c in self.supported_types["creatures"]
         ]:
@@ -195,6 +201,7 @@ class FantasyCardFactory(CardFactory):
         )
 
     def create_spell(self, name_or_power: str) -> SpellCard:
+        """Create a spell card by name"""
         if name_or_power not in [
                 c["name"] for c in self.supported_types["spells"]
         ]:
@@ -211,6 +218,7 @@ class FantasyCardFactory(CardFactory):
         )
 
     def create_artifact(self, name_or_power: str) -> ArtifactCard:
+        """Create an artifact card by name"""
         if name_or_power not in [
                 c["name"] for c in self.supported_types["artifacts"]
         ]:
@@ -295,20 +303,6 @@ class FantasyCardFactory(CardFactory):
         else:
             raise ValueError(f"Deck size '{size}' not supported")
 
-    def generate_deck(self, deck_list: dict) -> list[Card]:
-        """Generate a random deck based on the provided deck list with 15
-        creatures, 10 spells, and 5 artifacts."""
-        deck = []
-        for _ in range(15):
-            creature = choice(deck_list["creatures"])
-            deck.append(creature)
-        for _ in range(10):
-            spell = choice(deck_list["spells"])
-            deck.append(spell)
-        for _ in range(5):
-            artifact = choice(deck_list["artifacts"])
-            deck.append(artifact)
-        return deck
-
     def get_supported_types(self) -> dict:
+        """Return the dictionary of supported card types"""
         return self.supported_types

@@ -1,22 +1,31 @@
-from .GameStrategy import GameStrategy
 from ex0.Card import Card
 from ex0.CreatureCard import CreatureCard
+from ex0.GameState import GameState
+from ex0.TurnPhase import TurnPhase
+from ex0.Player import Player
 from ex1.SpellCard import SpellCard
 from ex1.ArtifactCard import ArtifactCard
-from .GameEngine import Player, TurnPhase
+from ex3.GameStrategy import GameStrategy
 from operator import attrgetter
 
 
 class AggressiveStrategy(GameStrategy):
+    """
+    Aggressive game strategy that prioritizes dealing damage
+
+    Attributes:
+        total_damage (int): Total damage dealt using this strategy
+    """
 
     def __init__(self):
+        """Initialize the aggressive strategy"""
         self.total_damage: int = 0
 
     def execute_turn(self, hand: list, battlefield: list[dict]) -> dict:
-        """Execute the turn and returns a list of all the action done"""
+        """Execute the turn and return a dict of all actions performed"""
 
         # Get gamestate status
-        gamestate = battlefield[0]
+        gamestate: GameState = battlefield[0]
 
         if gamestate['phase'] is not TurnPhase.END and gamestate[
                 'phase'] is not TurnPhase.INIT:
@@ -29,7 +38,8 @@ class AggressiveStrategy(GameStrategy):
         opposite_player = [
             p for p in gamestate.get('players', []) if p != active_player
         ][0]
-        opposite_board: dict = battlefield[1].get(opposite_player.name)
+        opposite_board: list[Player | CreatureCard] = (battlefield[1].get(
+            opposite_player.name))
 
         # Draw phase
         gamestate['phase'] = TurnPhase.DRAW
@@ -40,8 +50,8 @@ class AggressiveStrategy(GameStrategy):
         gamestate['phase'] = TurnPhase.MAIN
         targets_attacked: set = set()
         direct_damage_dealt: int = 0
-        cards_played, mana_used = self.play_main_phase(active_player,
-                                                       gamestate)
+        cards_played, mana_used = (self.play_main_phase(
+            active_player, gamestate))
 
         # Track newly summoned creatures (can't attack first turn)
         newly_summoned: list[CreatureCard] = []
@@ -60,7 +70,8 @@ class AggressiveStrategy(GameStrategy):
         gamestate['phase'] = TurnPhase.COMBAT
 
         # Get prioritized targets for combat
-        targets: list = self.prioritize_targets(opposite_board)
+        targets: list[Player | CreatureCard] = (
+            self.prioritize_targets(opposite_board))
 
         # Spell cycle
         if spell_played:
@@ -79,7 +90,6 @@ class AggressiveStrategy(GameStrategy):
                         print(f"{spell.name} hits {target.name} "
                               f"for {damage_dealt} damage")
                     else:
-                        target: CreatureCard
                         # Attack creature on board
                         damage_dealt = spell.cost
                         targets_attacked.add(target.name)
@@ -153,6 +163,7 @@ class AggressiveStrategy(GameStrategy):
         }
 
     def get_strategy_name(self) -> str:
+        """Return the name of the strategy"""
         return super().get_strategy_name()
 
     def prioritize_targets(self, available_targets: list) -> list:
@@ -179,7 +190,7 @@ class AggressiveStrategy(GameStrategy):
 
     def play_main_phase(self, player: Player,
                         gamestate: dict) -> tuple[list[Card], int]:
-
+        """Play the main phase: sort hand and play cards by priority"""
         hand: list[Card] = sorted(player.hand, key=attrgetter('cost'))
         mana_start: int = player.get_mana()
 
@@ -203,6 +214,7 @@ class AggressiveStrategy(GameStrategy):
 
     def play_cards(self, cards: list[Card], player: Player,
                    gamestate: dict) -> list[Card]:
+        """Play cards from hand if player has enough mana"""
         played = []
         for card in cards:
             if player.get_mana() >= card.cost:

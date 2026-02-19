@@ -2,18 +2,37 @@ from ex0.Card import Card
 
 
 class ArtifactCard(Card):
-    def __init__(
-        self, name: str, cost: int, rarity: str, durability: int, effect: str
-    ):
+    """
+    Class representing an artifact card in the game
+
+    Attributes:
+        name (str): The name of the artifact card
+        cost (int): The mana cost to play the card
+        rarity (str): The rarity of the card
+            (Common, Uncommon, Rare, Legendary)
+        durability (int): The durability of the artifact
+        effect (str): The effect of the artifact
+    """
+
+    def __init__(self, name: str, cost: int, rarity: str, durability: int,
+                 effect: str):
+        """
+        Initialize an ArtifactCard with its attributes
+
+        Args:
+            name (str): The name of the artifact card
+            cost (int): The mana cost to play the card
+            rarity (str): The rarity of the card
+            durability (int): The durability of the artifact
+            effect (str): The effect of the artifact
+        """
         super().__init__(name, cost, rarity)
         self.durability = durability
         self.effect = effect
 
     def play(self, game_state: dict) -> dict:
-        player = game_state["active_player"]
-        if not self.is_playable(player.get_mana()):
-            print("")
-            return
+        """Play the artifact card and return the result of the action"""
+        self._check_mana(game_state)
         result = {
             "card_played": self.name,
             "mana_used": self.cost,
@@ -22,10 +41,12 @@ class ArtifactCard(Card):
         return result
 
     def activate_ability(self) -> dict:
+        """Activate the artifact's permanent ability"""
         return {"Permanent": self.effect}
 
     @classmethod
     def mana_ring(cls) -> "ArtifactCard":
+        """Create a Mana Ring artifact card"""
         return cls(
             name="Mana Ring",
             cost=3,

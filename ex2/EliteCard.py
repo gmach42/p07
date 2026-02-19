@@ -4,6 +4,21 @@ from .Magical import Magical
 
 
 class EliteCard(Card, Combatable, Magical):
+    """
+    Class representing an elite card with combat and magical abilities
+
+    Attributes:
+        name (str): The name of the card
+        cost (int): The mana cost to play the card
+        rarity (str): The rarity of the card
+        combat_type (str): The type of combat (Melee, Ranged, etc.)
+        attack_power (int): The attack power of the card
+        defense (int): The defense value of the card
+        health (int): The health points of the card
+        mana (int): The mana available for spells
+        knowned_spells (dict[str, int]): Known spells and their costs
+    """
+
     def __init__(
         self,
         name: str,
@@ -16,6 +31,20 @@ class EliteCard(Card, Combatable, Magical):
         mana: int,
         knowned_spells: dict[str, int],
     ):
+        """
+        Initialize an EliteCard with all attributes
+
+        Args:
+            name (str): The name of the card
+            cost (int): The mana cost to play the card
+            rarity (str): The rarity of the card
+            combat_type (str): The type of combat
+            attack_power (int): The attack power (must be positive)
+            defense (int): The defense value (must be positive)
+            health (int): The health points (must be positive)
+            mana (int): The mana available for spells
+            knowned_spells (dict[str, int]): Known spells and costs
+        """
         # initialize Card and Magical explicitly (avoid double super() misuse)
         Card.__init__(self, name, cost, rarity)
         Magical.__init__(self, mana, knowned_spells)
@@ -30,17 +59,14 @@ class EliteCard(Card, Combatable, Magical):
 
     # Card's methods
     def play(self, game_state: dict) -> dict:
-        if not self.is_playable(game_state["mana"]):
-            print()
-            return
+        self._check_mana(game_state)
         result = {
             "card_played": self.name,
             "mana_used": self.cost,
             "effect": "Creature summoned to battlefield",
         }
-        game_state["mana"] -= self.cost
-        game_state['played_cards'].append(self)
-        return f"Play result: {result}\n"
+        game_state["active_player"].spend_mana(self.cost)
+        return result
 
     # Combatable's methods
     def attack(self, target) -> dict:
@@ -62,12 +88,14 @@ class EliteCard(Card, Combatable, Magical):
         }
 
     def get_combat_stats(self) -> dict:
-        # d1 = super().get_card_info()
-        # d2 = super().get_combat_stats()
-        # res = d1.update(d2)
-        return super().get_combat_stats()
+        return {
+            "combat_type": self.combat_type,
+            "attack_power": self.attack_power,
+            "defense": self.defense,
+            "health": self.health,
+        }
 
-    # Magic-related methods
+    # Magic methods
     def cast_spell(self, spell_name: str, targets: list) -> dict:
         if spell_name not in self.knowned_spells:
             return f"Spell not knowned by {self.name}!"
@@ -78,7 +106,7 @@ class EliteCard(Card, Combatable, Magical):
         return {
             "caster": self.name,
             "spell": spell_name,
-            "targets": targets,
+            "targets": [target.name for target in targets],
             "mana_used": spell_cost,
         }
 

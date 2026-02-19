@@ -1,48 +1,48 @@
+from typing import TypedDict
 from ex0.CreatureCard import CreatureCard
 from ex0.Card import Card
 from ex0.Player import Player
-from .CardFactory import CardFactory
-from .GameStrategy import GameStrategy
-from enum import Enum
-from typing import TypedDict
+from ex0.GameState import GameState
 from ex1.Deck import Deck
 from ex1.SpellCard import SpellCard
 from ex1.ArtifactCard import ArtifactCard
-
-
-class TurnPhase(Enum):
-    """Enum representing the different phases of a turn"""
-    INIT = "Initialization phase:"
-    DRAW = "Drawing phase:"
-    MAIN = "Main phase:"
-    COMBAT = "Combat phase:"
-    END = "End phase:"
-
-
-class Gamestate(TypedDict):
-    """TypetDict representing the current state of the game"""
-    turn: int
-    players: list[Player]
-    active_player: Player
-    phase: TurnPhase
-    game_over: bool
-    winner: Player | None
-    total_damage: int
+from ex3.CardFactory import CardFactory
+from ex3.GameStrategy import GameStrategy
 
 
 class BoardField(TypedDict):
-    """TypetDict representing the board a player"""
+    """TypedDict representing the board of a player"""
     player: Player
-    board: tuple[int, list[CreatureCard]]
+    board: list[CreatureCard | Player]
 
 
 class GameEngine:
+    """
+    Game engine that manages the game state and turn execution
+
+    Attributes:
+        name (str): The name of the game engine
+        battlefield (list): The current game battlefield state
+        factory (CardFactory): The factory for creating cards
+        strategy (GameStrategy): The strategy used for playing
+        total_damage (int): Total damage dealt in the game
+        card_created (list[Card]): List of all cards created
+        player1 (Player): The first player
+        player2 (Player): The second player
+    """
 
     def __init__(
         self,
         name: str,
-        battlefield: list[Gamestate | dict[str, list[CreatureCard]]],
+        battlefield: list[GameState | dict[str, list[CreatureCard]]],
     ):
+        """
+        Initialize the GameEngine
+
+        Args:
+            name (str): The name of the game engine
+            battlefield (list): The initial battlefield state
+        """
         self.name: str = name
         self.battlefield = battlefield
         self.factory: CardFactory
@@ -54,7 +54,7 @@ class GameEngine:
 
     def configure_engine(self, factory: CardFactory,
                          strategy: GameStrategy) -> None:
-
+        """Configure the game engine with a factory and strategy"""
         # Set factory and strategy for the game engine
         self.factory = factory
         self.strategy = strategy
@@ -70,6 +70,7 @@ class GameEngine:
             self.card_created.extend(player.deck.total_cards)
 
     def simulate_turn(self) -> dict:
+        """Simulate a single turn and return the turn report"""
         # Get gamestate status and active player
         gamestate = self.battlefield[0]
         active_player: Player = gamestate.get('active_player')
@@ -81,13 +82,11 @@ class GameEngine:
         self.total_damage += turn_report.get("damage_dealt", 0)
         # Reset mana to starting value for next turn
         mana_used = turn_report.get('mana_used', 0)
-        print(
-            f"{active_player.name} has used {mana_used}/"
-            f"{starting_mana} mana this turn"
-        )
+        print(f"{active_player.name} has used {mana_used}/"
+              f"{starting_mana} mana this turn")
         active_player.mana = starting_mana
         if starting_mana < 8:
-            # Increment mana by 1 each turn, up to a maximum of 5
+            # Increment mana by 1 each turn, up to a maximum of 8
             active_player.mana += 1
         gamestate['turn'] += 1
         # Switch active player for the next turn
@@ -95,7 +94,25 @@ class GameEngine:
                                       == self.player1 else self.player1)
         return turn_report
 
+    @staticmethod
+    def sort_cards_by_type_display(cards: list[Card]) -> dict[str, list[str]]:
+        """Sort cards by type for display purposes"""
+        sorted_cards_name: dict[str, list[str]] = {
+            "creature_cards": [],
+            "spell_cards": [],
+            "artifact_cards": []
+        }
+        for card in cards:
+            if isinstance(card, CreatureCard):
+                sorted_cards_name["creature_cards"].append(card.name)
+            elif isinstance(card, SpellCard):
+                sorted_cards_name["spell_cards"].append(card.name)
+            elif isinstance(card, ArtifactCard):
+                sorted_cards_name["artifact_cards"].append(card.name)
+        return sorted_cards_name
+
     def get_engine_status(self) -> dict:
+        """Return the current status of the game engine"""
         supported_types = self.factory.get_supported_types()
         available_types: dict[str, list[str]] = {}
         for category, types in supported_types.items():
@@ -109,6 +126,7 @@ class GameEngine:
         }
 
     def get_game_report(self) -> dict:
+        """Generate a report at the end of the game with the final results."""
         if self.battlefield[0]["winner"].name == "Gildas":
             message = "Evil has been vanquished, YOU WIN"
         else:
@@ -131,6 +149,7 @@ class GameEngine:
         }
 
     def print_battlefield(self) -> None:
+        """Helper function to print the current state of the battlefield."""
         player_boards = self.battlefield[1]
         player1_board = [
             c.name for c in player_boards[self.player1.name]
@@ -140,9 +159,14 @@ class GameEngine:
             c.name for c in player_boards[self.player2.name]
             if isinstance(c, CreatureCard)
         ]
-        print("Current battlefield state:")
         battlefield_state = f"{self.player1.name}: {player1_board} VS " \
                             f"{self.player2.name}: {player2_board}"
-        print('\n' + '+' * len(battlefield_state))
+        half_length = (len(battlefield_state) - 13) // 2
+        if len(battlefield_state) % 2 == 0:
+            extra_plus = '+'
+        else:
+            extra_plus = ''
+        print('\n' + '+' * half_length + ' BATTLEFIELD ' + '+' * half_length +
+              extra_plus)
         print(battlefield_state)
         print('+' * len(battlefield_state) + '\n')

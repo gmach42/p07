@@ -1,15 +1,13 @@
-from .GameStrategy import GameStrategy
-from .GameEngine import GameEngine, TurnPhase
-from .AggressiveStrategy import AggressiveStrategy
-from .CardFactory import CardFactory
-from .FantasyCardFactory import FantasyCardFactory
-
+from ex3.GameStrategy import GameStrategy
+from ex3.GameEngine import GameEngine, BoardField
+from ex3.AggressiveStrategy import AggressiveStrategy
+from ex3.CardFactory import CardFactory
+from ex3.FantasyCardFactory import FantasyCardFactory
 
 __all__ = [
     "GameStrategy",
     "GameEngine",
-    "TurnPhase",
-    "TurnPhaseError",
+    "BoardField",
     "AggressiveStrategy",
     "CardFactory",
     "FantasyCardFactory",
