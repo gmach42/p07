@@ -34,7 +34,7 @@ class CreatureCard(Card):
         else:
             raise ValueError(f"Please enter a non-zero positive value "
                              f"to set the attack of {self.name}")
-        if attack > 0:
+        if health > 0:
             self.health = health
         else:
             raise ValueError(f"Please enter a non-zero positive value "

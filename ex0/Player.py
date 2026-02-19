@@ -1,4 +1,4 @@
-from ex0.Card import Card
+from ex0.Card import Card, NotEnoughManaError
 from ex1.Deck import Deck
 
 
@@ -68,12 +68,11 @@ class Player:
                 "effect": None,
         }
         if card not in self.hand:
-            print(f"{self.name} does not have {card.name} in hand.")
-            return result
+            raise ValueError(f"{self.name} does not have {card.name} in hand.")
         if not card.is_playable(self.mana):
-            print(
+            raise NotEnoughManaError(
                 f"{self.name} does not have enough mana to play {card.name}.")
-            return result
+
         result = card.play(game_state)
         if result.get("card_played") is not None:
             print(f"{self.name} played {card.name}.")

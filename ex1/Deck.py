@@ -2,6 +2,11 @@ from ex0.Card import Card
 import random
 
 
+class NoCardError(Exception):
+    """Error should be raised when no more cards are in the deck"""
+    pass
+
+
 class Deck:
     """
     Class representing a deck of cards
@@ -61,8 +66,9 @@ class Deck:
 
     def draw_card(self) -> Card:
         """Draw the top card from the deck"""
-        card_drew = self.total_cards[0]
-        self.total_cards.pop(0)
+        if len(self.total_cards) == 0:
+            raise NoCardError("No more cards in the deck")
+        card_drew = self.total_cards.pop(0)
         print(f"Drew: {card_drew.name} ({card_drew.type})")
         return card_drew
 

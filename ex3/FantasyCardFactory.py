@@ -236,8 +236,7 @@ class FantasyCardFactory(CardFactory):
         )
 
     def create_themed_deck(self, size: str) -> dict:
-        """AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH
-        :)
+        """
         Create a themed deck of the specified size.
         For some obscure reason, this method shall return a dictionary
         instead of a Deck object

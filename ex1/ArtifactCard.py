@@ -54,3 +54,14 @@ class ArtifactCard(Card):
             durability=5,
             effect="Mana Boost",
         )
+
+    @classmethod
+    def mana_crystal(cls) -> "ArtifactCard":
+        """Create a Mana Crystal artifact card"""
+        return cls(
+            name="Mana Crystal",
+            cost=2,
+            rarity="Common",
+            durability=3,
+            effect="+1 mana per turn",
+        )

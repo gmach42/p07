@@ -1,3 +1,4 @@
+from ex0.Card import Card
 from .Deck import Deck
 from ex0.CreatureCard import CreatureCard
 from .SpellCard import SpellCard
@@ -12,27 +13,30 @@ def main() -> None:
     gildas = Player("Gildas", 8)
 
     print("Building deck with different card types...")
-    deck = Deck("Gildas")
+
+    # Create some cards to add to the deck
     goblin_warrior = CreatureCard.goblin_warrior()
-    fire_dragon = CreatureCard("Fire Dragon", 5, "Legendary", 7, 5)
-    lightning_bolt = SpellCard("Lightning Bolt", 3, "Common",
-                               "Deal 3 damage to target")
-    mana_crystal = ArtifactCard("Mana Crystal", 2, "Rare", 10,
-                                "+1 mana per turn")
-    cards: list[CreatureCard | SpellCard
-                | ArtifactCard] = [fire_dragon, lightning_bolt, mana_crystal]
+    fire_dragon = CreatureCard.fire_dragon()
+    lightning_bolt = SpellCard.lightning_bolt()
+    mana_crystal = ArtifactCard.mana_crystal()
+    cards: list[Card] = [fire_dragon, lightning_bolt, mana_crystal]
+
+    # Add cards to the deck, shuffle and display
+    deck = Deck("Gildas")
     for card in cards:
         deck.add_card(card)
     deck.shuffle()
     print(f"Deck stats: {deck.get_deck_stats()}\n")
 
-    print("Drawing and playing cards:\n")
+    # Create a simple game state for testing card play
     game_state: GameState = {
         "players": [gildas],
         "active_player": gildas,
         "enemy_creatures": [goblin_warrior],
     }
 
+    # Draw and play cards until the deck is empty
+    print("Drawing and playing cards:\n")
     while len(deck.total_cards) > 0:
         card = deck.draw_card()
         result = card.play(game_state)
@@ -43,4 +47,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")

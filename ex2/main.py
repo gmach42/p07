@@ -8,6 +8,7 @@ from ex0.CreatureCard import CreatureCard
 
 
 def print_dict(d: dict) -> None:
+    """Helper function to print a dictionary in a readable format"""
     for k, v in d.items():
         print(f"{k.capitalize()}: {v}")
 
@@ -69,4 +70,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")

@@ -50,3 +50,11 @@ class SpellCard(Card):
     def fireball(cls) -> "SpellCard":
         """Create a Fireball spell card"""
         return cls("Fireball", cost=4, rarity="Uncommon", effect_type="Damage")
+
+    @classmethod
+    def lightning_bolt(cls) -> "SpellCard":
+        """Create a Lightning Bolt spell card"""
+        return cls("Lightning Bolt",
+                   cost=3,
+                   rarity="Common",
+                   effect_type="Deal 3 damage to target")

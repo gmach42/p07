@@ -87,14 +87,18 @@ def main() -> None:
     print("\nAvailable Cards in the Factory:")
     print_dict(game.get_engine_status()["Available types"])
 
-    print("\nStarting Deck of each player:")
-    print(f"{gildas.name}:")
-    print_dict(starting_deck_player1)
-    print(f"{piscine_python.name}:")
-    print_dict(starting_deck_player2)
+    # print("\nStarting Deck of each player:")
+    # print(f"{gildas.name}:")
+    # print_dict(starting_deck_player1)
+    # print(f"{piscine_python.name}:")
+    # print_dict(starting_deck_player2)
+
     print()
     # --------------------------------------
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")
