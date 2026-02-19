@@ -1,6 +1,6 @@
-from .Rankable import Rankable
-from ex2 import Combatable
 from ex0 import Card
+from ex2 import Combatable
+from ex4.Rankable import Rankable
 
 
 class TournamentCard(Card, Combatable, Rankable):
@@ -16,7 +16,7 @@ class TournamentCard(Card, Combatable, Rankable):
         health (int): Health points
         wins (int): Number of tournament wins
         losses (int): Number of tournament losses
-        rating (int): Current ELO-style rating
+        rating (int): Current rating
         id (str): Unique identifier for the card
     """
 
@@ -27,9 +27,9 @@ class TournamentCard(Card, Combatable, Rankable):
                  name: str,
                  cost: int,
                  rarity: str,
-                 attack_power: int = 3,
-                 defense: int = 2,
-                 health: int = 5):
+                 attack_power: int,
+                 defense: int,
+                 health: int):
         """
         Initialize a TournamentCard
 
@@ -37,9 +37,9 @@ class TournamentCard(Card, Combatable, Rankable):
             name (str): The name of the card
             cost (int): The mana cost to play the card
             rarity (str): The rarity of the card
-            attack_power (int): Attack power (default: 3)
-            defense (int): Defense value (default: 2)
-            health (int): Health points (default: 5)
+            attack_power (int): Attack power
+            defense (int): Defense value
+            health (int): Health points
         """
         super().__init__(name, cost, rarity)
         self.attack_power = attack_power
@@ -61,7 +61,10 @@ class TournamentCard(Card, Combatable, Rankable):
 
     # Card's methods
     def play(self, game_state: dict) -> dict:
-        """Play the tournament card in a match context"""
+        """Play the tournament card in a match context
+        I don't use game_state in this exercise since
+        it's too different from the main game
+        """
         result = {
             "card_played": self.name,
             "id": self.id,
@@ -115,18 +118,18 @@ class TournamentCard(Card, Combatable, Rankable):
     # Rankable's methods
     def calculate_rating(self) -> int:
         """Calculate the current rating based on wins and losses"""
-        # ELO-style system with fixed K-factor
-        return self.rating  # Rating is updated directly in update_wins/losses
+        # Rating is automatically calculated in update_wins/update_losses
+        return self.rating
 
     def update_wins(self, wins: int) -> None:
         """Update the number of wins"""
         self.wins += wins
-        self.rating += 16  # Fixed rating increase per win
+        self.rating += 16
 
     def update_losses(self, losses: int) -> None:
         """Update the number of losses"""
         self.losses += losses
-        self.rating -= 16  # Fixed rating decrease per loss
+        self.rating -= 16
 
     def get_rank_info(self) -> dict:
         """Return ranking information"""
@@ -144,7 +147,7 @@ class TournamentCard(Card, Combatable, Rankable):
 
     # TournamentCard specific methods
     def get_tournament_stats(self) -> dict:
-        """Return comprehensive tournament statistics"""
+        """Return tournament statistics"""
         return {
             "name": self.name,
             "id": self.id,
@@ -161,3 +164,9 @@ class TournamentCard(Card, Combatable, Rankable):
 
     def __repr__(self) -> str:
         return f"{self.name} (ID: {self.id}, Rating: {self.rating})"
+
+    def display_info(self) -> None:
+        print(f"\n{self.name} (ID: {self.id}):")
+        print("- Interfaces: [Card, Combatable, Rankable]")
+        print(f"- Rating: {self.rating}")
+        print(f"- Record: {self.wins}-{self.losses}")

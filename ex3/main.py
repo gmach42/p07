@@ -19,7 +19,7 @@ def print_dict(d: dict, except_keys: list[str] = None) -> None:
             print(f"{k.capitalize()}: {v}")
 
 
-def main():
+def main() -> None:
 
     print("=== DataDeck Game Engine ===\n")
 

@@ -74,6 +74,7 @@ class AggressiveStrategy(GameStrategy):
             self.prioritize_targets(opposite_board))
 
         # Spell cycle
+        # TODO I'll refactor here if I'm motivated
         if spell_played:
             for spell in spell_played:
                 if spell.effect_type == "damage":
@@ -120,6 +121,7 @@ class AggressiveStrategy(GameStrategy):
                 and creature not in newly_summoned
             ]
 
+            # TODO I'll refactor here if I'm motivated
             for creature in active_creatures:
                 if targets:
                     target = targets[0]  # Get the highest priority target

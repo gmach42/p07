@@ -1,6 +1,5 @@
 from .TournamentCard import TournamentCard
 from typing import Optional
-import random
 
 
 class TournamentPlatform:
@@ -34,7 +33,7 @@ class TournamentPlatform:
         return card.id
 
     def create_match(self, card1_id: str, card2_id: str) -> dict:
-        """Create a match between two cards"""
+        """Create a match between two cards and return match result"""
 
         # Validate cards exist
         if card1_id not in self.registered_cards:
@@ -52,7 +51,7 @@ class TournamentPlatform:
         # Simulate combat
         rounds = []
         round_num = 0
-        max_rounds = 50  # Prevent infinite loops
+        max_rounds = 50
 
         while card1.health > 0 and card2.health > 0 and round_num < max_rounds:
             round_num += 1
@@ -91,7 +90,7 @@ class TournamentPlatform:
             winner = card2
             loser = card1
         else:
-            # Draw (shouldn't happen but handle it)
+            # Draw if both cards at 0 health
             winner = None
             loser = None
 
@@ -112,34 +111,7 @@ class TournamentPlatform:
             "rounds": round_num
         }
 
-        # Also store detailed history
-        detailed_result = {
-            "match_id": self.total_matches,
-            "card1": {
-                "name": card1.name,
-                "id": card1.id,
-                "final_health": card1.health
-            },
-            "card2": {
-                "name": card2.name,
-                "id": card2.id,
-                "final_health": card2.health
-            },
-            "winner": {
-                "name": winner.name,
-                "id": winner.id,
-                "new_rating": winner.rating
-            } if winner else None,
-            "loser": {
-                "name": loser.name,
-                "id": loser.id,
-                "new_rating": loser.rating
-            } if loser else None,
-            "rounds": round_num,
-            "round_details": rounds[:10]  # First 10 rounds
-        }
-
-        self.match_history.append(detailed_result)
+        self.match_history.append(match_result)
         return match_result
 
     def get_leaderboard(self) -> list[dict]:
@@ -167,7 +139,7 @@ class TournamentPlatform:
         return leaderboard
 
     def generate_tournament_report(self) -> dict:
-        """Generate a comprehensive tournament report"""
+        """Generate the tournament report"""
         if not self.registered_cards:
             return {"error": "No cards registered in tournament"}
 
@@ -175,9 +147,6 @@ class TournamentPlatform:
 
         # Calculate statistics
         total_cards = len(self.registered_cards)
-        total_wins = sum(card.wins for card in self.registered_cards.values())
-        total_losses = sum(card.losses
-                           for card in self.registered_cards.values())
 
         # Find top performer
         top_card = leaderboard[0] if leaderboard else None
@@ -190,17 +159,13 @@ class TournamentPlatform:
         report = {
             "tournament_summary": {
                 "total_cards": total_cards,
-                "total_matches": self.total_matches,
-                "total_wins": total_wins,
-                "total_losses": total_losses,
-                "average_rating": round(avg_rating, 2)
+                "matches_played": self.total_matches,
+                "average_rating": round(avg_rating)
             },
             "top_performer":
             top_card,
             "leaderboard":
             leaderboard,
-            "recent_matches":
-            (self.match_history[-5:] if self.match_history else []),
             "registered_cards": [{
                 "name": card.name,
                 "id": card.id,
@@ -209,22 +174,6 @@ class TournamentPlatform:
         }
 
         return report
-
-    def simulate_random_matches(self, num_matches: int) -> list[dict]:
-        """Simulate random matches between registered cards"""
-        if len(self.registered_cards) < 2:
-            return [{"error": "Need at least 2 cards to simulate matches"}]
-
-        results = []
-        card_ids = list(self.registered_cards.keys())
-
-        for _ in range(num_matches):
-            # Pick two random different cards
-            card1_id, card2_id = random.sample(card_ids, 2)
-            result = self.create_match(card1_id, card2_id)
-            results.append(result)
-
-        return results
 
     def get_card_stats(self, card_id: str) -> Optional[dict]:
         """Get detailed statistics for a specific card"""
@@ -237,3 +186,21 @@ class TournamentPlatform:
     def __repr__(self) -> str:
         return (f"TournamentPlatform(cards={len(self.registered_cards)}, "
                 f"matches={self.total_matches})")
+
+    def display_leaderboard(self) -> None:
+        """Display the current tournament leaderboard"""
+        leaderboard = self.get_leaderboard()
+        for i, card_data in enumerate(leaderboard, 1):
+            print(f"{i}. {card_data['name']} - "
+                  f"Rating: {card_data['rating']} "
+                  f"({card_data['wins']}-{card_data['losses']})")
+
+    def simulate_tournament(self) -> None:
+        """Simulate a full tournament with all registered cards"""
+        card_ids = list(self.registered_cards.keys())
+        counter = 1
+        for i in range(len(card_ids)):
+            for j in range(i + 1, len(card_ids)):
+                print(f"Match {counter}:",
+                      self.create_match(card_ids[i], card_ids[j]))
+                counter += 1

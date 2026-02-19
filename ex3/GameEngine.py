@@ -55,6 +55,7 @@ class GameEngine:
     def configure_engine(self, factory: CardFactory,
                          strategy: GameStrategy) -> None:
         """Configure the game engine with a factory and strategy"""
+
         # Set factory and strategy for the game engine
         self.factory = factory
         self.strategy = strategy
@@ -63,7 +64,6 @@ class GameEngine:
         self.factory.create_themed_deck("large")
         deck_list: dict = self.factory.create_themed_deck("large")
         for player in self.battlefield[0]['players']:
-            # Generate a deck list of 15 creatures, 10 spells and 5 artifacts
             player.deck = self.factory.generate_deck(deck_list)
             player.deck = Deck.from_card_list(player.name, player.deck)
             player.deck.shuffle()
@@ -71,15 +71,21 @@ class GameEngine:
 
     def simulate_turn(self) -> dict:
         """Simulate a single turn and return the turn report"""
+
         # Get gamestate status and active player
         gamestate = self.battlefield[0]
         active_player: Player = gamestate.get('active_player')
         hand = active_player.get_hand()
         starting_mana = active_player.get_mana()
+
+        # Display Battlefield and player's hand
         self.print_battlefield()
         print(f"{active_player.name}'s hand: {hand}")
+
+        # Execute turn with chosen strategy
         turn_report = self.strategy.execute_turn(hand, self.battlefield)
         self.total_damage += turn_report.get("damage_dealt", 0)
+
         # Reset mana to starting value for next turn
         mana_used = turn_report.get('mana_used', 0)
         print(f"{active_player.name} has used {mana_used}/"
@@ -88,8 +94,9 @@ class GameEngine:
         if starting_mana < 8:
             # Increment mana by 1 each turn, up to a maximum of 8
             active_player.mana += 1
+
+        # Increment turn and change active player
         gamestate['turn'] += 1
-        # Switch active player for the next turn
         gamestate['active_player'] = (self.player2 if active_player
                                       == self.player1 else self.player1)
         return turn_report
@@ -97,6 +104,7 @@ class GameEngine:
     @staticmethod
     def sort_cards_by_type_display(cards: list[Card]) -> dict[str, list[str]]:
         """Sort cards by type for display purposes"""
+
         sorted_cards_name: dict[str, list[str]] = {
             "creature_cards": [],
             "spell_cards": [],
@@ -113,6 +121,7 @@ class GameEngine:
 
     def get_engine_status(self) -> dict:
         """Return the current status of the game engine"""
+
         supported_types = self.factory.get_supported_types()
         available_types: dict[str, list[str]] = {}
         for category, types in supported_types.items():
@@ -127,6 +136,7 @@ class GameEngine:
 
     def get_game_report(self) -> dict:
         """Generate a report at the end of the game with the final results."""
+
         if self.battlefield[0]["winner"].name == "Gildas":
             message = "Evil has been vanquished, YOU WIN"
         else:
@@ -150,6 +160,7 @@ class GameEngine:
 
     def print_battlefield(self) -> None:
         """Helper function to print the current state of the battlefield."""
+
         player_boards = self.battlefield[1]
         player1_board = [
             c.name for c in player_boards[self.player1.name]
