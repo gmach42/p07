@@ -27,6 +27,11 @@ class ArtifactCard(Card):
             effect (str): The effect of the artifact
         """
         super().__init__(name, cost, rarity)
+        if durability < 0:
+            raise ValueError(
+                f"durability must be non-negative, got {durability}")
+        if not isinstance(effect, str) or not effect:
+            raise ValueError("effect must be a non-empty string")
         self.durability = durability
         self.effect = effect
 

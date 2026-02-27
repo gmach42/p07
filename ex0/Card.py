@@ -30,6 +30,14 @@ class Card(ABC):
             rarity (str): The rarity of the card
                 ("Common", "Uncommon", "Rare", "Epic", "Legendary").
         """
+        if not isinstance(name, str) or not name:
+            raise ValueError("name must be a non-empty string")
+        if not isinstance(cost, int) or cost < 0:
+            raise ValueError("cost must be a non-negative integer")
+        valid_rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary"}
+        if rarity not in valid_rarities:
+            raise ValueError(
+                f"rarity must be one of {valid_rarities}, got '{rarity}'")
         self.name = name
         self.cost = cost
         self.rarity = rarity

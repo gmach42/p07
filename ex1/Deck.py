@@ -25,6 +25,8 @@ class Deck:
         Args:
             name (str): The name of the deck
         """
+        if not isinstance(name, str) or not name:
+            raise ValueError("name must be a non-empty string")
         self.name = name
         self.total_cards: list[Card] = []
         self.card_types: dict[str, int] = {}
@@ -53,7 +55,7 @@ class Deck:
             card.name for card in self.total_cards
         ]
         if card_name not in list_of_card_names:
-            return False
+            raise ValueError(f"Card '{card_name}' not found in deck")
         card_to_remove: Card = (
             self.total_cards[list_of_card_names.index(card_name)])
         self.total_cards.remove(card_to_remove)

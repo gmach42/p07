@@ -22,6 +22,10 @@ class Player:
             name (str): The name of the player
             mana (int): The starting mana for the player
         """
+        if not isinstance(name, str) or not name:
+            raise ValueError("name must be a non-empty string")
+        if not isinstance(mana, int) or mana < 0:
+            raise ValueError("mana must be a non-negative integer")
         self.name: str = name
         self.mana: int = mana
         self.deck: Deck
@@ -38,6 +42,9 @@ class Player:
 
     def draw_card(self) -> None:
         """Draw a card from the player's deck"""
+        if self.deck is None:
+            raise Exception(
+                f"{self.name} has no deck to draw from")
         card_drawn = self.deck.draw_card()
         self.hand.append(card_drawn)
         if self.deck.total_cards == []:

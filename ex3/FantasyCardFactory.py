@@ -184,6 +184,9 @@ class FantasyCardFactory(CardFactory):
 
     def create_creature(self, name_or_power: str) -> CreatureCard:
         """Create a creature card by name"""
+        if not isinstance(name_or_power, str):
+            raise TypeError(
+                f"name_or_power must be str, got {type(name_or_power)}")
         if name_or_power not in [
                 c["name"] for c in self.supported_types["creatures"]
         ]:
@@ -202,6 +205,9 @@ class FantasyCardFactory(CardFactory):
 
     def create_spell(self, name_or_power: str) -> SpellCard:
         """Create a spell card by name"""
+        if not isinstance(name_or_power, str):
+            raise TypeError(
+                f"name_or_power must be str, got {type(name_or_power)}")
         if name_or_power not in [
                 c["name"] for c in self.supported_types["spells"]
         ]:
@@ -219,6 +225,9 @@ class FantasyCardFactory(CardFactory):
 
     def create_artifact(self, name_or_power: str) -> ArtifactCard:
         """Create an artifact card by name"""
+        if not isinstance(name_or_power, str):
+            raise TypeError(
+                f"name_or_power must be str, got {type(name_or_power)}")
         if name_or_power not in [
                 c["name"] for c in self.supported_types["artifacts"]
         ]:
@@ -243,6 +252,13 @@ class FantasyCardFactory(CardFactory):
 
         3 sizes are supported: "small", "medium", and "large".
         """
+        if not isinstance(size, str):
+            raise TypeError(f"size must be str, got {type(size)}")
+        if size not in ("small", "medium", "large"):
+            raise ValueError(
+                f"Deck size '{size}' not supported. "
+                f"Use 'small', 'medium', or 'large'")
+
         if size == "small":
             return {
                 "creatures": [self.create_creature("Goblin Warrior")],

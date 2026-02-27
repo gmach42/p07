@@ -1,5 +1,5 @@
-from ex0 import Card
-from ex2 import Combatable
+from ex0.Card import Card
+from ex2.Combatable import Combatable
 from ex4.Rankable import Rankable
 
 
@@ -42,6 +42,15 @@ class TournamentCard(Card, Combatable, Rankable):
             health (int): Health points
         """
         super().__init__(name, cost, rarity)
+        if attack_power <= 0:
+            raise ValueError(
+                f"attack_power must be positive, got {attack_power}")
+        if defense < 0:
+            raise ValueError(
+                f"defense must be non-negative, got {defense}")
+        if health <= 0:
+            raise ValueError(
+                f"health must be positive, got {health}")
         self.attack_power = attack_power
         self.defense = defense
         self.health = health

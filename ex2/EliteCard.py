@@ -48,6 +48,8 @@ class EliteCard(Card, Combatable, Magical):
         # initialize Card and Magical explicitly (avoid double super() misuse)
         Card.__init__(self, name, cost, rarity)
         Magical.__init__(self, mana, knowned_spells)
+        if not isinstance(combat_type, str) or not combat_type:
+            raise ValueError("combat_type must be a non-empty string")
         self.combat_type = combat_type
         # only these must be strictly positive
         for charac in [attack_power, defense, health]:

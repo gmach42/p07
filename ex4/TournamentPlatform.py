@@ -37,9 +37,14 @@ class TournamentPlatform:
 
         # Validate cards exist
         if card1_id not in self.registered_cards:
-            return {"error": f"Card with ID {card1_id} not found"}
+            raise ValueError(f"Card with ID {card1_id} not found")
         if card2_id not in self.registered_cards:
-            return {"error": f"Card with ID {card2_id} not found"}
+            raise ValueError(f"Card with ID {card2_id} not found")
+
+        # Prevent a card from fighting itself
+        if card1_id == card2_id:
+            raise ValueError(
+                "A card cannot fight against itself")
 
         card1 = self.registered_cards[card1_id]
         card2 = self.registered_cards[card2_id]
@@ -141,7 +146,7 @@ class TournamentPlatform:
     def generate_tournament_report(self) -> dict:
         """Generate the tournament report"""
         if not self.registered_cards:
-            return {"error": "No cards registered in tournament"}
+            raise ValueError("No cards registered in tournament")
 
         leaderboard = self.get_leaderboard()
 
@@ -152,6 +157,8 @@ class TournamentPlatform:
         top_card = leaderboard[0] if leaderboard else None
 
         # Calculate average rating
+        if total_cards == 0:
+            raise ValueError("No cards available for rating calculation")
         avg_rating = sum(
             card.rating
             for card in self.registered_cards.values()) / total_cards

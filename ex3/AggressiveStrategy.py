@@ -45,6 +45,9 @@ class AggressiveStrategy(GameStrategy):
         gamestate['phase'] = TurnPhase.DRAW
         if active_player.deck is not None:
             active_player.draw_card()
+        elif len(active_player.hand) == 0:
+            raise IndexError(
+                f"{active_player.name} has no deck and no cards in hand")
 
         # Main Phase, active player can play his/her cards
         gamestate['phase'] = TurnPhase.MAIN
